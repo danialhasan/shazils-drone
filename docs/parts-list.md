@@ -1,101 +1,56 @@
-# Parts List
+# Parts List (AliExpress Foam Glider Build)
 
-Complete parts list with Amazon.ca purchase links.
+The Raspberry Pi Zero 2 W has been returned, so compute hardware is TBD. Costs below are rough CAD estimates.
 
-## Phase 1: RC Conversion (Required)
+## Phase 1: Foam Glider RC Conversion
 
-### Components to Order
+| Component | Specification / Link | Est. Price (CAD) | Status |
+|-----------|---------------------|------------------|--------|
+| Airframe | AliExpress EPP foam glider (≈950 mm span) | $40 | To Order |
+| Motor + ESC | Existing 2212/1400KV + 30A ESC with 5 V BEC | $0 | Owned |
+| Servos | MG90S 9 g metal gear (pair) | $12 | To Order |
+| ELRS receiver | 2.4 GHz PWM-capable ELRS | $0 | Owned |
+| Batteries | 3S 2200–3000 mAh LiPo | $45 | Owned |
+| Propellers | 8×6 slow-fly or similar | $10 | To Order |
+| Adhesives | Foam-safe hot glue / Foam-Tac | $8 | To Order |
 
-| Component | Specification | Link | Est. Price (CAD) | Status |
-|-----------|---------------|------|------------------|--------|
-| Airframe | Reptile S800 V2 Flying Wing 820mm | [Amazon.ca](https://www.amazon.ca/Reptile-Shadow-Wingspan-Flying-Version/dp/B0BYF33DVX) | $65 | To Order |
-| ESC | 30A with 5V/3A BEC | [Amazon.ca](https://www.amazon.ca/RC-Brushless-Electric-Controller-Bullet/dp/B071GRSFBD) | $15 | To Order |
-| Servos | MG90S Metal Gear 9g (2-pack) | [Amazon.ca](https://www.amazon.ca/Servos-Digital-Aluminum-Helicopter-Vehicle/dp/B09KXM5L7Z) | $12 | To Order |
-| Battery | 3S 3000mAh 25C LiPo (2-pack) | [Amazon.ca](https://www.amazon.ca/PCEONAMP-Battery-Rechargeable-Capacity-Chargers%EF%BC%882packs%EF%BC%89/dp/B0D2D6R479) | $45 | To Order |
-| Charger | 2S-3S LiPo Balance Charger | [Amazon.ca](https://www.amazon.ca/Battery-Balancer-Charger-7-4-11-1V-Compact/dp/B06XR87987) | $15 | To Order |
-| Propellers | 8060 or 9045 props | [Amazon.ca Search](https://www.amazon.ca/rc-propeller/s?k=rc+propeller+8060) | $8 | To Order |
+**Phase 1 subtotal:** ≈$70 using mostly existing electronics.
 
-**Phase 1 Total: ~$160 CAD**
+## Phase 2: Autonomy
 
-### Components Already Owned
+| Component | Specification | Est. Price (CAD) | Status |
+|-----------|---------------|------------------|--------|
+| Flight controller | Matek F405-Wing (ArduPilot) | $55 | Planned |
+| GPS + compass | BN-880 | $20 | Planned |
+| Airspeed sensor | Optional pitot tube | $15 | Planned |
+| Telemetry radios | 915 MHz or 433 MHz pair | $35 | Planned |
+| Wiring harness | JST-GH / Dupont jumpers | $15 | Planned |
 
-| Component | Specification | Status |
-|-----------|---------------|--------|
-| Motor | A2212 1400kv Brushless | Owned |
-| Receiver | ELRS Receiver | Owned |
-| Transmitter | RadioMaster Pocket | Owned |
+**Phase 2 subtotal:** ≈$140 depending on optional sensors.
 
-### Notes on Phase 1 Components
+## Phase 3: Edge AI Payload (TBD)
 
-**Motor Compatibility:**
-- A2212 1400kv is slightly underpowered for S800 V2 (frame recommends 2204-2205 2300kv)
-- Will still fly, just not as fast
-- Acceptable for initial testing
+| Component | Notes | Est. Price (CAD) | Status |
+|-----------|-------|------------------|--------|
+| SBC (compute) | Evaluating Pi 4, Orange Pi 5, Jetson Nano, etc. | $120–$200 | TBD |
+| Camera | Autofocus CSI or quality USB cam | $40 | TBD |
+| Accelerator | Coral USB (preferred) or onboard NPU | $75 | TBD |
+| Storage | 64 GB A2 microSD or NVMe | $20 | TBD |
+| Power | Dedicated 5 V/3 A BEC + filter | $15 | TBD |
+| Mounting | TPU/foam cradle for payload bay | $20 | TBD |
 
-**Battery Options:**
-- 2200mAh: Lighter, better handling, ~12-15 min flight time
-- 3000mAh: Heavier, longer flight time ~18-20 min
-- Recommend starting with 2200mAh for initial flights
+**Phase 3 subtotal:** ≈$250 once hardware is selected.
 
-**Propeller Sizing:**
-- S800 V2 specs say max 6045
-- A2212 can handle 8060 or 9045
-- Start with 8060 for safety margin
+## Budget Snapshot
 
----
+| Phase | Cost |
+|-------|------|
+| Phase 1 | ~$70 |
+| Phase 2 | ~$140 |
+| Phase 3 | ~$250 (pending) |
+| **Total** | **~$460** |
 
-## Phase 2: Autonomy (Future)
-
-| Component | Specification | Link | Est. Price (CAD) | Status |
-|-----------|---------------|------|------------------|--------|
-| Flight Controller | Matek F405-Wing | [Search](https://www.amazon.ca/s?k=matek+f405+wing) | $45-55 | Future |
-| GPS Module | BN-880 (GPS + Compass) | [Search](https://www.amazon.ca/s?k=bn-880+gps) | $15-20 | Future |
-| Airspeed Sensor | Optional - improves flight | [Search](https://www.amazon.ca/s?k=pitot+tube+rc) | $15 | Future |
-| Telemetry Radio | Optional - ground station link | [Search](https://www.amazon.ca/s?k=433mhz+telemetry+rc) | $30 | Future |
-
-**Phase 2 Total: ~$75-120 CAD**
-
----
-
-## Phase 3: Camera & AI (Future)
-
-| Component | Specification | Link | Est. Price (CAD) | Status |
-|-----------|---------------|------|------------------|--------|
-| Pi Zero 2 W | Already owned | — | — | Owned |
-| Pi Camera | Module v3 (autofocus) | [Search](https://www.amazon.ca/s?k=raspberry+pi+camera+module+3) | $35-45 | To Order |
-| AI Accelerator | Coral USB Accelerator | [Search](https://www.amazon.ca/s?k=coral+usb+accelerator) | $60-80 | To Order |
-| MicroSD Card | 64GB A2 High Speed | [Search](https://www.amazon.ca/s?k=64gb+microsd+a2) | $12-15 | To Order |
-| BEC for Pi | 5V 3A dedicated | [Search](https://www.amazon.ca/s?k=5v+3a+bec+rc) | $10 | To Order |
-| Camera Ribbon | 30cm+ flexible cable | [Search](https://www.amazon.ca/s?k=raspberry+pi+camera+cable+30cm) | $5-8 | To Order |
-
-**Phase 3 Total: ~$125-160 CAD**
-
----
-
-## Complete Project Budget
-
-| Phase | Cost (CAD) |
-|-------|------------|
-| Phase 1: RC Conversion | ~$160 |
-| Phase 2: Autonomy | ~$100 |
-| Phase 3: Camera/AI | ~$140 |
-| **Total** | **~$400** |
-
----
-
-## Alternative/Backup Components
-
-### Higher Capacity Battery (if more flight time needed)
-| Component | Link | Price |
-|-----------|------|-------|
-| HRB 3S 3300mAh 60C | [Amazon.ca](https://www.amazon.ca/HRB-Battery-3000mAh-Truggy-Airplane/dp/B07Q1F8FVS) | $35 |
-
-### Servo Spares (recommended)
-| Component | Link | Price |
-|-----------|------|-------|
-| MG90S 8-pack | [Amazon.ca](https://www.amazon.ca/Suitable-Remote-Control-Helicopter-Airplane/dp/B08NW72JR1) | $20 |
-
-### Combo Kit Alternative (if motor not owned)
-| Component | Link | Price |
-|-----------|------|-------|
-| A2212 + 30A ESC + Servos + Props | [Amazon.ca](https://www.amazon.ca/1400KV-Brushless-Steering-Propeller-Accessory/dp/B08CMTT87M) | $25 |
+## Notes
+- Keep a spare foam glider on order since the airframe is inexpensive.
+- Delay SBC purchase until availability/power requirements are clear.
+- Revisit battery capacity after autonomy hardware is mounted to maintain CG.

@@ -1,336 +1,109 @@
 # Phase 2: Autonomy
 
-Add a flight controller and GPS to enable autonomous flight capabilities.
+Swap in an ArduPilot-capable flight controller and GPS so the foam glider can fly missions, return-to-home, and talk to a future compute payload.
 
 ## Overview
 
 | Aspect | Details |
 |--------|---------|
-| Goal | Enable GPS waypoint navigation and autonomous flight modes |
-| Prerequisites | Phase 1 complete, stable RC flight achieved |
-| Duration | 2-3 days for hardware + software setup |
+| Goal | GPS-guided flight via Matek F405-Wing + BN-880 |
+| Airframe | Foam glider from Phase 1 |
+| Dependencies | Phase 1 trimmed and logged |
+| Duration | 2–3 days |
 | Difficulty | Intermediate |
 
 ---
 
 ## Hardware Requirements
 
-### Required Components
-
-| Component | Specification | Purpose |
-|-----------|---------------|---------|
-| Flight Controller | Matek F405-Wing | ArduPilot, sensor fusion, MAVLink |
-| GPS Module | BN-880 (GPS + Compass) | Position, navigation, heading |
-| UART Cable | JST-GH or Dupont | FC to Pi communication |
-
-### Optional Components
-
-| Component | Specification | Purpose |
-|-----------|---------------|---------|
-| Airspeed Sensor | Pitot tube + sensor | Better throttle control |
-| Telemetry Radio | 433MHz / 915MHz | Ground station link |
-| Current Sensor | Hall effect | Battery monitoring |
+| Component | Purpose | Notes |
+|-----------|---------|-------|
+| Matek F405-Wing (ArduPilot) | Flight controller | Native ArduPlane support |
+| BN-880 GPS/compass | Nav + heading | Mount away from ESC wires |
+| Pitot / airspeed (optional) | Better throttle control | Optional |
+| Telemetry radio (optional) | Ground station link | 915 MHz or 433 MHz |
+| Vibration tape / velcro | Mount FC on foam | Easy removal |
 
 ---
 
 ## System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                   Ground Station                        │
-│    Mission Planner / QGroundControl                     │
-│    (Laptop with telemetry receiver)                     │
-└────────────────────────┬────────────────────────────────┘
-                         │ 433/915 MHz Telemetry
-                         │ (Optional)
-                         ▼
-┌─────────────────────────────────────────────────────────┐
-│                  Matek F405-Wing                        │
-│  ┌─────────────┐  ┌──────────────┐  ┌───────────────┐  │
-│  │  ArduPilot  │  │   Sensors    │  │   Outputs     │  │
-│  │  Firmware   │  │  - IMU       │  │  - Servo 1    │  │
-│  │             │  │  - Baro      │  │  - Servo 2    │  │
-│  │  Modes:     │  │  - GPS       │  │  - ESC/Motor  │  │
-│  │  - Manual   │  │  - Compass   │  │               │  │
-│  │  - FBWA     │  │  - Airspeed  │  │  UART2 ────────────► Pi Zero 2 W
-│  │  - Auto     │  │              │  │  (MAVLink)    │  │
-│  │  - RTL      │  │              │  │               │  │
-│  │  - Loiter   │  │              │  │               │  │
-│  └─────────────┘  └──────────────┘  └───────────────┘  │
-└─────────────────────────────────────────────────────────┘
-         ▲                    ▲
-         │                    │
-    ELRS Receiver        BN-880 GPS
-    (Manual Control)     (I2C + Serial)
+Ground Station ──(optional telemetry)──► Matek F405-Wing
+                               │
+ELRS Receiver ──► SBUS          │          BN-880 GPS/Compass
+Servos / ESC  ──► S1/S2/S3     │          UART1 + I2C
+UART2 (unused) ────────────────┘ reserved for Phase 3 SBC
 ```
 
 ---
 
-## Flight Controller: Matek F405-Wing
+## Mounting & Wiring
 
-### Why Matek F405-Wing?
+| FC Pin | Connects To | Notes |
+|--------|-------------|-------|
+| SBUS | ELRS receiver | Shield if long run |
+| S1 | Left elevon | `SERVO1_FUNCTION = 77` |
+| S2 | Right elevon | `SERVO2_FUNCTION = 78` |
+| S3 | ESC throttle | `SERVO3_FUNCTION = 70` |
+| TX1/RX1 + 5 V | BN-880 GPS | Serial |
+| SCL/SDA + 5 V | BN-880 compass | I2C |
+| TX2/RX2 | Reserved | Route to canopy for future SBC |
 
-| Feature | Benefit |
-|---------|---------|
-| ArduPilot native support | Full autonomous features |
-| Dual UART available | FC + Pi communication |
-| Built-in BEC (5V) | Powers GPS, receiver |
-| Current sensor input | Battery monitoring |
-| Designed for fixed wing | Appropriate I/O mapping |
-
-### Pinout (Key Connections)
-
-| Pin | Function | Connect To |
-|-----|----------|------------|
-| SBUS | RC Input | ELRS Receiver |
-| S1 | Servo 1 | Left Elevon |
-| S2 | Servo 2 | Right Elevon |
-| S3 | Motor | ESC Signal |
-| TX2/RX2 | UART2 | Pi Zero 2 W (MAVLink) |
-| 5V/GND | Power | GPS Module |
-| SCL/SDA | I2C | GPS Compass |
+- Mount FC at CG, arrow forward.
+- GPS on top hatch or mast, 10 cm away from ESC/motor wires.
 
 ---
 
-## GPS Module: BN-880
+## Firmware & Setup
 
-### Features
+1. Flash ArduPlane for Matek F405-Wing using Mission Planner.
+2. Configure basics:
+   ```
+   SERVO1_FUNCTION = 77
+   SERVO2_FUNCTION = 78
+   SERVO3_FUNCTION = 70
 
-| Spec | Value |
-|------|-------|
-| GPS Chip | Ublox M8N |
-| Compass | HMC5883L |
-| Update Rate | 10Hz |
-| Accuracy | 2.5m CEP |
-| Interface | Serial (GPS) + I2C (Compass) |
-
-### Mounting Requirements
-
-- Mount GPS on top of aircraft
-- Flat, level surface
-- Arrow pointing forward
-- Away from ESC/motor wires (EMI)
-- Minimum 10cm from power wires
+   RC_MAP_ROLL = 1
+   RC_MAP_PITCH = 2
+   RC_MAP_THROTTLE = 3
+   RC_MAP_YAW = 4
+   ```
+3. Assign flight modes (MANUAL, FBWA, AUTO, RTL) to a switch.
+4. Run accel, compass, and radio calibrations.
+5. Bench-test control surfaces with prop removed.
 
 ---
 
-## Software Stack
-
-### ArduPilot (Flight Controller)
+## Failsafes & Geofence
 
 ```
-ArduPlane Firmware
-├── Stabilization (IMU + PID loops)
-├── Navigation (GPS waypoints)
-├── Flight Modes
-│   ├── MANUAL - Direct RC control
-│   ├── FBWA - Fly-by-wire (stabilized)
-│   ├── AUTO - Follow waypoint mission
-│   ├── RTL - Return to launch
-│   ├── LOITER - Circle at position
-│   └── CRUISE - Heading + altitude hold
-└── MAVLink Protocol (Communication)
-```
+BATT_FS_LOW_ACT = 1      # RTL on low voltage
+BATT_LOW_VOLT    = 10.5  # 3.5 V/cell
+FS_SHORT_ACTN    = 0     # Continue mission on brief loss
+FS_LONG_ACTN     = 1     # RTL after timeout
+FS_LONG_TIMEOUT  = 20
 
-### Mission Planner (Ground Station)
-
-- Windows application
-- Upload waypoint missions
-- Real-time telemetry display
-- Parameter tuning
-- Log analysis
-
----
-
-## Wiring Diagram
-
-```
-                    ┌─────────────────────┐
-                    │    BN-880 GPS       │
-                    │  ┌───┐  ┌───────┐   │
-                    │  │GPS│  │Compass│   │
-                    │  └─┬─┘  └───┬───┘   │
-                    │    │        │       │
-                    └────┼────────┼───────┘
-                         │        │
-                    TX/RX│   SCL/SDA
-                         │        │
-┌────────────────────────┼────────┼────────────────────┐
-│                  MATEK F405-WING                     │
-│                        │        │                    │
-│   GPS ◄────────────────┘        └────────► I2C      │
-│                                                      │
-│   ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐   │
-│   │  SBUS  │  │   S1   │  │   S2   │  │   S3   │   │
-│   └───┬────┘  └───┬────┘  └───┬────┘  └───┬────┘   │
-│       │           │           │           │         │
-└───────┼───────────┼───────────┼───────────┼─────────┘
-        │           │           │           │
-        ▼           ▼           ▼           ▼
-   ELRS RX     Left Servo  Right Servo   ESC
-```
-
----
-
-## Setup Procedure
-
-### Step 1: Flash ArduPilot Firmware
-
-1. Download ArduPlane firmware for Matek F405-Wing
-2. Connect FC via USB
-3. Use Mission Planner → Install Firmware
-4. Select "MatekF405-Wing" target
-5. Flash and wait for reboot
-
-### Step 2: Connect Hardware
-
-1. Connect GPS to UART1 (or dedicated GPS port)
-2. Connect compass to I2C (SCL/SDA)
-3. Connect ELRS receiver to SBUS input
-4. Connect servos to S1, S2
-5. Connect ESC to S3
-
-### Step 3: Configure ArduPilot
-
-#### Basic Parameters
-
-```
-SERVO1_FUNCTION = 77  (Elevon Left)
-SERVO2_FUNCTION = 78  (Elevon Right)
-SERVO3_FUNCTION = 70  (Throttle)
-
-RC_MAP_ROLL = 1
-RC_MAP_PITCH = 2
-RC_MAP_THROTTLE = 3
-
-ARMING_CHECK = 1      (All checks enabled)
-```
-
-#### Flight Modes (via RC switch)
-
-```
-FLTMODE1 = 0   (MANUAL)
-FLTMODE2 = 5   (FBWA)
-FLTMODE3 = 10  (AUTO)
-FLTMODE4 = 11  (RTL)
-```
-
-### Step 4: Calibrate Sensors
-
-1. **Accelerometer Calibration**
-   - Mission Planner → Setup → Accel Calibration
-   - Follow 6-position calibration
-
-2. **Compass Calibration**
-   - Mission Planner → Setup → Compass
-   - Rotate aircraft in all axes
-
-3. **Radio Calibration**
-   - Mission Planner → Setup → Radio Calibration
-   - Move all sticks to extremes
-
-### Step 5: Test Flight Modes
-
-1. **MANUAL Mode**
-   - Verify all controls work correctly
-   - Fly as normal RC
-
-2. **FBWA Mode (Fly-by-Wire)**
-   - Aircraft self-levels when sticks centered
-   - Test roll/pitch limits
-
-3. **RTL Mode**
-   - Set RTL_ALTITUDE parameter
-   - Test return-to-home behavior
-
-4. **AUTO Mode**
-   - Upload simple waypoint mission
-   - Test autonomous waypoint following
-
----
-
-## Autonomous Capabilities
-
-### Available Flight Modes
-
-| Mode | Description | Use Case |
-|------|-------------|----------|
-| MANUAL | Direct RC control | Takeoff, landing, emergencies |
-| FBWA | Stabilized, no altitude hold | Learning to fly |
-| CRUISE | Heading + altitude hold | Long range cruising |
-| AUTO | Waypoint following | Survey, patrol missions |
-| RTL | Return to launch | Failsafe, recall |
-| LOITER | Circle at GPS point | Observation |
-
-### Mission Types
-
-| Mission | Description |
-|---------|-------------|
-| Survey Grid | Fly grid pattern over area |
-| Waypoint Path | Visit points in sequence |
-| Loiter Circle | Orbit around point of interest |
-| Return Home | Automatic landing at home point |
-
----
-
-## Failsafe Configuration
-
-### Radio Failsafe (Signal Lost)
-
-```
-FS_SHORT_ACTN = 0  (Continue mission)
-FS_LONG_ACTN = 1   (RTL after 20 seconds)
-FS_LONG_TIMEOUT = 20
-```
-
-### Battery Failsafe
-
-```
-BATT_FS_LOW_ACT = 1   (RTL on low battery)
-BATT_LOW_VOLT = 10.5  (3.5V per cell)
-```
-
-### Geofence
-
-```
 FENCE_ENABLE = 1
-FENCE_TYPE = 7        (Altitude + Circle + Polygon)
-FENCE_ACTION = 1      (RTL on breach)
-FENCE_ALT_MAX = 120   (Max 120m altitude)
-FENCE_RADIUS = 500    (Max 500m from home)
+FENCE_TYPE   = 7
+FENCE_ACTION = 1
+FENCE_ALT_MAX = 120
+FENCE_RADIUS  = 500
 ```
 
 ---
 
-## Integration with Phase 3 (Pi Communication)
+## Flight Testing
 
-The FC exposes MAVLink over UART2 for Pi Zero 2 W communication.
-
-### UART2 Configuration
-
-```
-SERIAL2_PROTOCOL = 2   (MAVLink2)
-SERIAL2_BAUD = 57600   (or 115200)
-```
-
-### Physical Connection
-
-```
-FC UART2 TX  →  Pi GPIO 15 (RX)
-FC UART2 RX  →  Pi GPIO 14 (TX)
-FC GND       →  Pi GND
-```
-
-The Pi can then:
-- Read telemetry (position, altitude, battery)
-- Send commands (change mode, goto waypoint)
-- Trigger actions based on AI detection
+1. **Manual/FBWA shakedown:** confirm FC inline doesn’t change trims.
+2. **RTL test:** set RTL altitude ≥60 m, trigger switch, verify homing.
+3. **AUTO mission:** upload a short waypoint route in clear airspace.
+4. Check logs for vibration/current issues and adjust mounting if needed.
 
 ---
 
-## Next Steps
+## Prep for Phase 3
 
-Once autonomous flight is reliable:
-1. Tune PID parameters for smooth flight
-2. Test all failsafe scenarios
-3. Proceed to [Phase 3: Camera & AI](phase3-camera-ai.md)
+- Label TX2/RX2 leads and leave accessible for the future SBC harness.
+- Reserve canopy space/top hatch for the compute payload.
+- Capture CG + trim data before adding extra weight.

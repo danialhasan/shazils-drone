@@ -1,103 +1,66 @@
-# Shazil's Drone - AI-Powered UAV Project
+# Shazil's Drone – AI-Ready Foam Glider Project
 
-An AI-powered UAV built from a converted RC flying wing, featuring object detection and autonomous flight capabilities.
+Upgrading an inexpensive AliExpress foam glider into an AI-assisted UAV. The build is broken into three phases so we can fly quickly, keep the airframe simple, and postpone compute hardware decisions until we replace the returned Raspberry Pi Zero 2 W.
 
 ## Project Overview
 
-This project converts a Reptile S800 V2 flying wing into an autonomous UAV with:
-- Remote control flight (Phase 1)
-- Autonomous flight via ArduPilot (Phase 2)
-- AI-powered object detection using Raspberry Pi + Coral TPU (Phase 3)
-
-## Project Phases
-
 | Phase | Description | Status |
 |-------|-------------|--------|
-| [Phase 1: RC Conversion](docs/phase1-rc-conversion.md) | Get the plane flying with remote control | In Progress |
-| [Phase 2: Autonomy](docs/phase2-autonomy.md) | Add flight controller + GPS for autonomous flight | Planned |
-| [Phase 3: Camera/AI](docs/phase3-camera-ai.md) | Integrate Pi Zero 2 W + Coral TPU for object detection | Planned |
+| [Phase 1: Foam Glider RC Conversion](docs/phase1-rc-conversion.md) | Turn the foam glider into a dependable ELRS-controlled airplane. | In Progress |
+| [Phase 2: Autonomy](docs/phase2-autonomy.md) | Install ArduPilot FC + GPS for waypoint and RTL flight. | Planned |
+| [Phase 3: Edge AI Payload](docs/phase3-camera-ai.md) | Add a new SBC + camera + accelerator (TBD) for detection-driven missions. | Planned |
 
 ## Hardware Summary
 
 ### Already Owned
-- A2212 1400kv brushless motor
-- ELRS receiver
-- RadioMaster Pocket transmitter
-- Raspberry Pi Zero 2 W
+- 2212/1400KV brushless motor + 30A ESC
+- ELRS receiver + RadioMaster Pocket transmitter
+- 3S LiPo packs and charger
 
 ### To Acquire
-See [Parts List](docs/parts-list.md) for complete list with purchase links.
+- AliExpress foam glider kit (≈900–1000 mm span)
+- Matek F405-Wing (or similar) + BN-880 GPS
+- SBC replacement for the returned Pi Zero 2 W (Pi 4, Orange Pi, Jetson Nano, etc.) + camera
+- Coral USB accelerator (optional, based on SBC choice)
 
 ## Quick Links
+- [Updated parts list](docs/parts-list.md)
+- [Phase 1 build & checkout guide](docs/phase1-rc-conversion.md)
+- [Phase 2 autonomy plan](docs/phase2-autonomy.md)
+- [Phase 3 edge-AI payload plan](docs/phase3-camera-ai.md)
+- [Wiring reference](docs/wiring.md)
 
-- [Parts List with Amazon.ca Links](docs/parts-list.md)
-- [Wiring Diagram](docs/wiring.md)
-- [Phase 1: RC Conversion Guide](docs/phase1-rc-conversion.md)
-- [Phase 2: Autonomy Software](docs/phase2-autonomy.md)
-- [Phase 3: Camera & AI Integration](docs/phase3-camera-ai.md)
-
-## Architecture
+## Architecture Snapshot
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      PHASE 3: AI LAYER                      │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │              Raspberry Pi Zero 2 W                   │   │
-│  │  ┌──────────────┐    ┌─────────────────────────┐   │   │
-│  │  │  Pi Camera   │───►│  Coral TPU (TFLite)     │   │   │
-│  │  │  Module v3   │    │  Object Detection 30FPS │   │   │
-│  │  └──────────────┘    └───────────┬─────────────┘   │   │
-│  │                                  │                  │   │
-│  │                    ┌─────────────▼─────────────┐   │   │
-│  │                    │  DroneKit / pymavlink     │   │   │
-│  │                    │  (Send commands to FC)    │   │   │
-│  │                    └─────────────┬─────────────┘   │   │
-│  └──────────────────────────────────┼─────────────────┘   │
-└─────────────────────────────────────┼─────────────────────┘
-                                      │ UART (MAVLink)
-┌─────────────────────────────────────┼─────────────────────┐
-│                    PHASE 2: AUTONOMY LAYER                 │
-│  ┌──────────────────────────────────▼─────────────────┐   │
-│  │          ArduPilot Flight Controller               │   │
-│  │          (Matek F405-Wing)                         │   │
-│  │  - GPS Navigation (BN-880)                         │   │
-│  │  - Stabilization                                   │   │
-│  │  - Waypoint Missions                               │   │
-│  │  - Return to Home                                  │   │
-│  └────────────────────────┬───────────────────────────┘   │
-└───────────────────────────┼───────────────────────────────┘
-                            │
-┌───────────────────────────┼───────────────────────────────┐
-│                    PHASE 1: RC LAYER                       │
-│  ┌────────────────────────▼───────────────────────────┐   │
-│  │              ELRS Receiver                          │   │
-│  │              ◄──── RadioMaster Pocket               │   │
-│  └─────┬─────────────┬─────────────┬──────────────────┘   │
-│        │             │             │                       │
-│        ▼             ▼             ▼                       │
-│   ┌────────┐   ┌────────┐   ┌──────────┐                  │
-│   │ Servo  │   │ Servo  │   │   ESC    │                  │
-│   │ (Left) │   │(Right) │   │  (30A)   │                  │
-│   └───┬────┘   └───┬────┘   └────┬─────┘                  │
-│       │            │             │                         │
-│       ▼            ▼             ▼                         │
-│   ┌────────────────────┐   ┌──────────┐                   │
-│   │  Elevons (Wings)   │   │  Motor   │                   │
-│   │  Left    Right     │   │ A2212    │                   │
-│   └────────────────────┘   └──────────┘                   │
-│                                                            │
-│   ┌────────────────────────────────────────────────────┐  │
-│   │              Reptile S800 V2 Airframe              │  │
-│   │              820mm Wingspan Flying Wing            │  │
-│   └────────────────────────────────────────────────────┘  │
+│                FUTURE: EDGE AI PAYLOAD (PHASE 3)            │
+│  ┌──────────────────────────┐   ┌────────────────────────┐  │
+│  │  SBC (TBD)               │   │  Accelerator (Coral?)  │  │
+│  │  - Camera driver         │   │  - Real-time inference │  │
+│  │  - Detection software    │   │  - 30+ FPS             │  │
+│  └───────────┬──────────────┘   └──────────┬─────────────┘  │
+│              │ UART (MAVLink)              │ USB            │
+└──────────────┼─────────────────────────────┼────────────────┘
+               │                             │
+┌──────────────▼─────────────────────────────▼───────────────┐
+│              PHASE 2: AUTONOMY CORE                        │
+│  Matek F405-Wing (ArduPilot) + BN-880 GPS/compass          │
+│  - Manual, FBWA, AUTO, RTL, Loiter                         │
+│  - GPS waypoint nav + failsafes                            │
+└──────────────┬─────────────────────────────┬───────────────┘
+               │                             │
+┌──────────────▼─────────────────────────────▼───────────────┐
+│              PHASE 1: RC LAYER                             │
+│  RadioMaster Pocket  ──►  ELRS Receiver                    │
+│  Elevon servos        ──►  Foam glider control surfaces    │
+│  30A ESC + 2212 motor ──►  Propulsion                      │
 └────────────────────────────────────────────────────────────┘
 ```
 
-## Team
-
-- **Hardware Engineer**: Responsible for physical assembly, wiring, flight testing
-- **Software/Planning**: Claude AI - Documentation, software architecture, troubleshooting guidance
+## Team & Ownership
+- **Hardware / Flight Testing:** Shazil (airframe assembly, wiring, flight logs)
+- **Software / Planning:** Documentation + AI assistant support
 
 ## License
-
 MIT
