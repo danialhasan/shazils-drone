@@ -16,6 +16,8 @@ The Raspberry Pi Zero 2 W has been returned, so compute hardware is TBD. Costs
 
 **Phase 1 subtotal:** ≈$70 using mostly existing electronics.
 
+**What’s already on hand:** AliExpress foam glider airframe, adhesives (Foam-Tac/tape), propeller, motor (2212/1400KV), pushrods, and control horns. **Still needed:** fresh MG90S servos and a 3S LiPo pack (2200–3000 mAh).
+
 ## Phase 2: Autonomy
 
 | Component | Specification | Est. Price (CAD) | Status |
