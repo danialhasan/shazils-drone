@@ -9,3 +9,4 @@
   - Noted explicitly that the Pi Zero 2 W was returned so future contributors don’t reintroduce it by mistake.
   - Added this decision log to capture the rationale; future merges should preserve these sections.
 - **Follow-up:** When a new SBC is purchased, update Phase 3 docs with concrete instructions and record the choice here.
+- **Current hardware status (2025-12-27):** Motor, propeller, pushrods, and control horns are already on hand; the servos will be reordered to suit the new foam glider build.
