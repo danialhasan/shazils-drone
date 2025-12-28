@@ -1,6 +1,6 @@
 # Phase 1: Foam Glider RC Conversion
 
-Convert the AliExpress foam glider into a reliable ELRS-controlled aircraft. This replaces the earlier Reptile S800 V2 plan.
+Convert the AliExpress foam glider (white/red “GLIDER” airframe shown in the supplier photos) into a reliable ELRS-controlled aircraft. On-hand gear now includes the airframe, adhesives, propeller, motor, pushrods, and control horns; we still need to reorder servos and pick up the main LiPo battery. This replaces the earlier Reptile S800 V2 plan.
 
 ## Overview
 
